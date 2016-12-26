@@ -1,0 +1,23 @@
+version: 0.1
+notifications:
+  endpoints:
+    - name: pullup
+      disabled: false
+      url: http://pullup:1995/hook
+      timeout: 1s
+      threshold: 2
+      backoff: 10s
+      ignoredmediatypes:
+        - application/octet-stream
+storage:
+  filesystem:
+    rootdirectory: /var/lib/registry
+    maxthreads: 100
+log:
+  level: debug
+http:
+    addr: :5000
+    debug:
+        addr: :5001
+    headers:
+        X-Content-Type-Options: [nosniff]

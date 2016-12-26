@@ -1,0 +1,25 @@
+version: '2'
+services:
+    pullup:
+        build: .
+        image: pullup
+        ports:
+        - 1995:1995
+        environment:
+            PULLUP_TAGS: '*'
+            PULLUP_PORT: 1995
+            PULLUP_MASTER: ''
+            PULLUP_SCAN: 'yes'
+        volumes:
+        - /var/run/docker.sock:/var/run/docker.sock
+    registry:
+        ports:
+        - 5000:5000
+        - 5001:5001
+        image: registry:2.5
+        environment:
+            PULLUP: 'yes'
+        links:
+        - pullup:pullup
+        volumes:
+        - ./registry-config.yml:/etc/docker/registry/config.yml

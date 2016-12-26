@@ -1,0 +1,5 @@
+version: '2'
+services:
+  nginx:
+    build: .
+    image: localhost:5000/nginx
