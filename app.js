@@ -1,13 +1,12 @@
 var express = require('express');
 module.exports = function ({state, emitter}) {
-    state.port = +(process.env.PULLUP_PORT||1995);
+    state.port = +(process.env.PULLUP_PORT||1996);
     state.info = '';
     var app = express();
     app.set('json spaces', 4);
     app.use(parseJson);
-    emitter.on('start', () => 
-        app.listen(state.port)
-    );
+    emitter.on('start', () => { server = app.listen(state.port); });
+    emitter.on('stop', () => server.close());
     return app;
 }
 
@@ -26,4 +25,3 @@ function parseJson(req, res, next) {
         next();
     });
 }
-

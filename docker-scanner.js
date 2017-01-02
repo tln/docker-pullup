@@ -1,4 +1,4 @@
-module.exports = function ({state, docker}) {
+module.exports = function ({state, docker, emitter}) {
     state.scannedTags = [];
     state.containers = {};
     if (process.env.PULLUP_SCAN !== 'no') {
@@ -14,11 +14,12 @@ module.exports = function ({state, docker}) {
         });
     }
     function watchForEvents() {
-        var DockerEvents = require('docker-events');
-        emitter = new DockerEvents({ docker });
-        emitter.start();
-        emitter.on('start', (event) => dockerEvent(event));
-        emitter.on('stop', (event) => dockerEvent(event));
+        const DockerEvents = require('docker-events');
+        var events = new DockerEvents({ docker });
+        events.start();
+        events.on('start', (event) => dockerEvent(event));
+        events.on('stop', (event) => dockerEvent(event));
+        emitter.on('stop', () => events.stop());
     }
     function dockerEvent(event, state) {
         var { Action, Type, from, id } = event;
