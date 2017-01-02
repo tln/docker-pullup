@@ -1,9 +1,16 @@
 module.exports = function ({emitter, state, docker}) {
     emitter.on('push', ({tag}) => {
+        var containerInfo = state.containers[tag];
+        if (!containerInfo) return console.log('Container not running:', tag);
         state.tags
         .concat(state.scannedTags || [])
         .filter((tagSpec) => tagsMatch(tag, tagSpec))
-        .forEach((tagSpec) => pullUp(docker, tag, state.containers));
+        .forEach((tagSpec) => {
+                state.busy++;
+                pullUp(docker, tag, containerInfo, () => {
+                    state.busy--;
+                })
+            });
     });
 }
 
@@ -13,11 +20,10 @@ function tagsMatch(tag, tagSpec) {
     return tag === tagSpec || tagSpec === '*';
 }
 
-function pullUp(docker, repoTag, containers) {
-    var curInfo = containers[repoTag];
-    console.log('pullUp:', curInfo);
-    if (!curInfo.id) return console.log('Error getting tag');
-    var oldC = docker.getContainer(curInfo.id);
+function pullUp(docker, repoTag, containerInfo, cb) {
+    console.log('pullUp:', repoTag, containerInfo);
+    if (!containerInfo.id) return error('Error getting tag');
+    var oldC = docker.getContainer(containerInfo.id);
     var newC;
     docker.pull(repoTag, (err, stream) => {
       docker.modem.followProgress(stream, createContainer);
@@ -26,7 +32,7 @@ function pullUp(docker, repoTag, containers) {
         var info = oldC.inspect((err, info) => {
             info.Config.Hostname = ''; // copied from conduit... might need to be validated?
             docker.createContainer(info.Config, (err, container) => {
-                if (err) return console.log('Error creating new container, aborting');
+                if (err) return error('Error creating new container, aborting', err);
                 newC = container;
                 stopOldContainer();
             });
@@ -40,12 +46,14 @@ function pullUp(docker, repoTag, containers) {
     }
     function startNewContainer() {
         newC.start((err, container) => {
-            if (err) return fatalErrorPullupHasKilledYourWebsite(err);
+            if (err) return error('FATAL: Pullup has killed your website! Could not start container: '+repoTag, err);
             console.log('Container started: '+repoTag);
+            cb(null);  // success!
         });
     }
-    function fatalErrorPullupHasKilledYourWebsite(err) {
-        console.log('FATAL: Pullup has killed your website! Could not start container: '+repoTag);
+    function error(message, err) {
+        console.log(message);
         console.log(err);
+        cb(err);
     }
 }
