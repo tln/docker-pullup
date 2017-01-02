@@ -2,12 +2,11 @@ version: '2'
 services:
     pullup:
         build: .
-        image: pullup
+        image: tlntln/docker-pullup
         ports:
         - 1995:1995
         environment:
             PULLUP_TAGS: '*'
-            PULLUP_PORT: 1995
             PULLUP_MASTER: ''
             PULLUP_SCAN: 'yes'
         volumes:
@@ -16,7 +15,7 @@ services:
         ports:
         - 5000:5000
         - 5001:5001
-        image: registry:2.5
+        image: registry:2
         environment:
             PULLUP: 'yes'
         links:
