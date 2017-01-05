@@ -6,15 +6,14 @@ or a private Docker registry).
 Upon receiving the hook, Pullup will pull the new image, deploy a new 
 container from the updated image and then remove the original container.
 
-Pullup can dynamically distribute Docker Registry webhooks to pullup instances on
-other machines, so that you only have to configure your registry once.
-
 Pullup can be configured with a whitelist of acceptable repository names.
-Pullup will also search your running docker containers for envars matching PULLUP.
+Pullup will also search your running docker containers for envars matching 
+PULLUP.
 
 ## Project Status
 
-Experimental! Please open an issue to let me know what you are doing with the software.
+Experimental! Please open an issue to let me know what you are doing with 
+the software.
 
 ## Compare to
 
@@ -35,8 +34,6 @@ services:
         ports:
         - 1995:1995
         environment:
-            # Pullup server
-            PULLUP_MASTER=http://www.foo.com
             # Scan for PULLUP vars?
             PULLUP_SCAN=yes
             # Repos (image names) to hardcode

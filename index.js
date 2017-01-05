@@ -12,7 +12,6 @@ params.app = require('./app')(params);
 require('./info-api')(params);
 require('./static-tags')(params);
 require('./docker-scanner')(params);
-require('./subs')(params);
 require('./hook')(params);
 require('./pullup')(params);
 require('./idler')(params);
