@@ -4,7 +4,7 @@
   "description": "Simple deployment system for docker.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "node --harmony ./node_modules/.bin/jest",
     "start": "node index.js"
   },
   "author": "",
@@ -15,5 +15,12 @@
     "dockerode": "^2.3.1",
     "express": "^4.14.0",
     "request": "^2.79.0"
+  },
+  "devDependencies": {
+    "jest": "^18.1.0",
+    "pshell": "^1.1.0"
+  },
+  "engines": {
+    "node": ">=7"
   }
 }
