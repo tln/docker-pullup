@@ -18,7 +18,21 @@ function tagsMatch(tag, tagSpec) {
     return tag === tagSpec || tagSpec === '*';
 }
 
-function pullUp(docker, repoTag, containerInfo, cb) {
+function generateCreateRequestFromCurrentInfo(info) {
+    var result = Object.assign(info.Config);
+    
+    // Logic copied from conduit... might need to be validated?
+    result.Hostname = '';
+
+    // We copy the entire HostConfig, although the only thing
+    // currently known to be needed is the ports
+    result.HostConfig = info.HostConfig;
+    
+    return result;
+}
+
+
+function pullUp(docker, repoTag, containerInfo) {
     return new Promise((resolve, reject) => {
         console.log('pullUp:', repoTag, containerInfo);
         if (!containerInfo.id) return error('Error getting tag');
@@ -30,8 +44,8 @@ function pullUp(docker, repoTag, containerInfo, cb) {
 
         function createContainer() {
             var info = oldC.inspect((err, info) => {
-                info.Config.Hostname = ''; // copied from conduit... might need to be validated?
-                docker.createContainer(info.Config, (err, container) => {
+                var createRequest = generateCreateRequestFromCurrentInfo(info);
+                docker.createContainer(createRequest, (err, container) => {
                     if (err) return error('Error creating new container, aborting', err);
                     newC = container;
                     stopOldContainer();
