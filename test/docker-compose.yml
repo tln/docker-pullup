@@ -3,3 +3,5 @@ services:
   nginx:
     build: .
     image: localhost:5000/nginx
+    ports:
+    - 8111:80

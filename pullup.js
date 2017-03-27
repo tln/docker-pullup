@@ -1,11 +1,11 @@
-module.exports = function ({emitter, state, docker}) {
-    emitter.on('push', ({tag}) => {
+module.exports = function({ emitter, state, docker }) {
+    emitter.on('push', ({ tag }) => {
         var info = state.containers[tag];
         if (!info) return console.log('Container not running:', tag);
         state.tags
-        .concat(state.scannedTags || [])
-        .filter((tagSpec) => tagsMatch(tag, tagSpec))
-        .forEach((tagSpec) => {
+            .concat(state.scannedTags || [])
+            .filter((tagSpec) => tagsMatch(tag, tagSpec))
+            .forEach((tagSpec) => {
                 state.busy++;
                 pullUp(docker, tag, info).then(() => state.busy--);
             });
@@ -38,19 +38,22 @@ function pullUp(docker, repoTag, containerInfo, cb) {
                 });
             });
         }
+
         function stopOldContainer() {
             oldC.stop(() => {
                 startNewContainer();
-                oldC.remove(() => {console.log('Removed container')});
+                oldC.remove(() => { console.log('Removed container') });
             });
         }
+
         function startNewContainer() {
             newC.start((err, container) => {
-                if (err) return error('FATAL: Pullup has killed your website! Could not start container: '+repoTag, err);
-                console.log('Container started: '+repoTag);
-                resolve();  // success!
+                if (err) return error('FATAL: Pullup has killed your website! Could not start container: ' + repoTag, err);
+                console.log('Container started: ' + repoTag);
+                resolve(); // success!
             });
         }
+
         function error(message, err) {
             console.log(message);
             console.log(err);
