@@ -16,7 +16,7 @@ module.exports = function ({state, docker, emitter}) {
     }
     function _scan(what, cb) {
         docker[what]((err, items) => {
-            if (err) return //console.log('what', err);
+            if (err) return console.log('what', err);
             for (var item of items) {
                 cb(item);
             }
@@ -31,7 +31,6 @@ module.exports = function ({state, docker, emitter}) {
         emitter.on('stop', () => events.stop());
     }
     function dockerEvent(event, state) {
-        //console.log('dockerEvent', event);
         var { Action, Type, from, id, Actor } = event;
         // NB. as of docker 1.27, 'services' are not reported as separate events
         if (Type !== 'container') return;
@@ -42,7 +41,7 @@ module.exports = function ({state, docker, emitter}) {
         } else if (Action === 'stop') {
             removeContainer(from);
         } else {
-            //console.log('Unhandled container event', Type);
+            console.log('Unhandled container event', Type);
         }
     }
 
@@ -77,7 +76,7 @@ module.exports = function ({state, docker, emitter}) {
     function addContainerFromId(id) {
         var { containers, scannedTags } = state;
         docker.getContainer(id).inspect({}, (err, info) => {
-            if (err) return //console.log(err);
+            if (err) return console.log(err);
             var repoTag = addLatest(info.Config.Image);
             containers[repoTag] = { id: info.Id };
             if (info.Config.Env.filter((envar) => /^PULLUP/.test(envar))) {

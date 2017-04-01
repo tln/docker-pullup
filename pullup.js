@@ -4,7 +4,6 @@ module.exports = function ({emitter, state, docker}) {
     emitter.on('push', pullupContainerOrService);
 
     function pullupContainerOrService(event) {
-        //console.log('event:', event);
         var {tag} = event;
         var service = state.servicesByTag[tag];
         if (service) {
@@ -37,7 +36,7 @@ module.exports = function ({emitter, state, docker}) {
 
     function pullUpContainers(tag) {
         var info = state.containers[tag];
-        if (!info) return //console.log('Container not running:', tag);
+        if (!info) return console.log('Container not running:', tag);
         state.tags
         .concat(state.scannedTags || [])
         .filter((tagSpec) => tagsMatch(tag, tagSpec))

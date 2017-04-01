@@ -1,6 +1,5 @@
 function pullUpContainer(docker, repoTag, containerInfo) {
     return new Promise((resolve, reject) => {
-        //console.log('pullUp:', repoTag, containerInfo);
         if (!containerInfo.id) return error('Error getting tag');
         var oldC = docker.getContainer(containerInfo.id);
         var newC;
@@ -27,13 +26,13 @@ function pullUpContainer(docker, repoTag, containerInfo) {
         function startNewContainer() {
             newC.start((err, container) => {
                 if (err) return error('FATAL: Pullup has killed your website! Could not start container: '+repoTag, err);
-                //console.log('Container started: '+repoTag);
+                console.log('Container started: '+repoTag);
                 resolve();  // success!
             });
         }
         function error(message, err) {
-            //console.log(message);
-            //console.log(err);
+            console.log(message);
+            console.log(err);
             reject(err);
         }
     });
