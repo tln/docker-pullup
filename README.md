@@ -6,9 +6,11 @@ or a private Docker registry).
 Upon receiving the hook, Pullup will pull the new image, deploy a new 
 container from the updated image and then remove the original container.
 
+Pullup can also update services deployed onto docker swarm.
+
 Pullup can be configured with a whitelist of acceptable repository names.
 Pullup will also search your running docker containers for envars matching 
-PULLUP.
+PULLUP, or services with the "docker-pullup" label.
 
 ## Project Status
 
@@ -41,7 +43,6 @@ services:
         volumes:
         - /var/run/docker.sock:/var/run/docker.sock
 ```
-
 
 
 
