@@ -1,0 +1,32 @@
+#!/bin/bash
+util/dockerstopall
+cd test/registry
+LOCAL_IP=`ipconfig getifaddr en0` docker-compose up -d
+#docker images --digests --no-trunc --format '{{.Repository}}:{{.Tag}}@{{.Digest}}' localhost:5000/nginx | head -1
+#docker push localhost:5000/nginx:latest
+cd ../..
+#node --harmony index.js &
+#sleep 3
+
+cd test
+echo ----- deploying stack
+sleep 3
+docker stack deploy --compose-file service.yml docker-pullup-test
+echo ----- stack deployed
+docker ps
+sleep 5
+docker ps
+sleep 10
+echo press enter to continue
+read
+
+echo ----- about to build
+sleep 3
+(cat Dockerfile; echo 'RUN echo' `date`) > Dockerfile.gen
+docker build -t localhost:5000/nginx:latest -f Dockerfile.gen .
+docker push localhost:5000/nginx:latest
+echo ----- pushed
+docker ps
+sleep 15
+docker ps
+docker images --digests --no-trunc --format '{{.Repository}}:{{.Tag}}@{{.Digest}}' localhost:5000/nginx | head -1

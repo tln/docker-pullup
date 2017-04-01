@@ -1,0 +1,11 @@
+#!/bin/bash
+cd test
+echo ----- about to build
+sleep 3
+(cat Dockerfile; echo 'RUN echo' `date`) > Dockerfile.gen
+docker build -t localhost:5000/nginx:latest -f Dockerfile.gen .
+docker push localhost:5000/nginx:latest
+echo ----- pushed
+docker ps
+sleep 15
+docker ps
