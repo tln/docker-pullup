@@ -1,15 +1,24 @@
 module.exports = function ({state, docker, emitter}) {
     state.scannedTags = [];
-    state.containers = {};
+    state.containers = {};   // tag -> container info
+    state.servicesByTag = {};  // tag -> service info
+
     if (process.env.PULLUP_SCAN !== 'no') {
         scanContainers();
+        scanServices();
         watchForEvents();
     }
     function scanContainers() {
-        docker.listContainers((err, containers) => {
-            if (err) return console.log('scanContainers', err);
-            for (var container of containers) {
-                addContainer(container.Id);
+        _scan('listContainers', (item) => addContainerFromId(item.Id));
+    }
+    function scanServices() {
+        _scan('listServices', addService);
+    }
+    function _scan(what, cb) {
+        docker[what]((err, items) => {
+            if (err) return //console.log('what', err);
+            for (var item of items) {
+                cb(item);
             }
         });
     }
@@ -22,21 +31,53 @@ module.exports = function ({state, docker, emitter}) {
         emitter.on('stop', () => events.stop());
     }
     function dockerEvent(event, state) {
-        var { Action, Type, from, id } = event;
+        //console.log('dockerEvent', event);
+        var { Action, Type, from, id, Actor } = event;
+        // NB. as of docker 1.27, 'services' are not reported as separate events
         if (Type !== 'container') return;
         if (Action === 'start') {
-            addContainer(id);
+            debugger;
+            addContainerFromId(id);
+            addServiceFromContainerLabels(Actor.Attributes);
         } else if (Action === 'stop') {
             removeContainer(from);
         } else {
-            console.log('Unhandled container event', Type);
+            //console.log('Unhandled container event', Type);
         }
     }
 
-    function addContainer(id) {
+    function addService(service) {
+        var { services, scannedTags } = state;
+        if (service.Spec.Labels['docker-pullup']) {
+            const completeTag = service.Spec.TaskTemplate.ContainerSpec.Image;
+            const [ repoTag, repoSha ] = completeTag.split('@');
+            if (!repoSha) {
+                // This is strange, the service may be just starting
+                console.log('No sha info!');
+            }
+            service.repoSha = repoSha;
+            state.servicesByTag[repoTag] = service;
+            emitter.emit('serviceFound', service);
+        }
+    }
+
+    // This function will detect if the labels signify the container is 
+    // a service, and then add the service details as appropriate.
+    function addServiceFromContainerLabels(labels) {
+        let swarmId = labels['com.docker.swarm.service.id'];
+        if (swarmId) {
+            docker.getService(swarmId).inspect((err, info) => {
+                addService(info);
+            });
+        }
+    }
+
+    // We need more detail when adding a container, therefore we 
+    // must inspect.
+    function addContainerFromId(id) {
         var { containers, scannedTags } = state;
         docker.getContainer(id).inspect({}, (err, info) => {
-            if (err) return console.log(err);
+            if (err) return //console.log(err);
             var repoTag = addLatest(info.Config.Image);
             containers[repoTag] = { id: info.Id };
             if (info.Config.Env.filter((envar) => /^PULLUP/.test(envar))) {
@@ -60,4 +101,8 @@ function addLatest(repoTag) {
         repoTag += ':latest';
     }
     return repoTag;
+}
+
+function stripSha(repoTag) {
+    return repoTag.split('@')[0];
 }
