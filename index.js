@@ -17,3 +17,6 @@ require('./pullup')(params);
 require('./idler')(params);
 
 params.emitter.emit('start');
+
+// For testing, export the core structure
+module.exports = params;
