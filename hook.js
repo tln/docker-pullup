@@ -4,15 +4,21 @@ module.exports = function ({emitter, app}) {
 
     function processHook(req, res) {
         var data = req.body;
-        console.log('hook:', data);
+        //console.log('hook:', data);
         handleEvents(data.events||[]);
         res.json({});
     }
     function handleEvents(events) {
         for (var event of events) {
             if (event.action !== 'push') continue;
-            var extracted = extractEventInfo(event);
-            emitter.emit('push', extracted);
+            //console.log('handleEvent:', event);
+            try { 
+                var extracted = extractEventInfo(event);
+                //console.log('here2', extracted);
+                emitter.emit('push', extracted);
+            } catch(e) {
+                //console.error('Error on push event', e);
+            }
         }
     }
 }
