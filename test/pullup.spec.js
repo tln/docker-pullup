@@ -2,10 +2,12 @@ const pshell = require('pshell');
 pshell.options.echoCommand = true;
 pshell.options.captureOutput = true;
 
-const pullup = require('../pullup');
+const pullUpContainer = require('../pullup-container');
 const Docker = require('dockerode');
 
-jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000; // 10 second timeout
+// We need an extremely long timeout because we run 
+// several slow docker commands 
+jasmine.DEFAULT_TIMEOUT_INTERVAL = 45000;
 
 describe('docker integration tests', function () {
   var docker_compose_conf;
@@ -22,10 +24,12 @@ describe('docker integration tests', function () {
     return dockerComposeCmd('ps -q nginx');
   }
 
+  afterEach(() => dockerComposeCmd('down'));
+
   test('pullUp works', async () => {
     docker_compose_conf = 'no-port.yml';
     let id = await bringUpContainer();
-    var info = await pullup.pullUp(new Docker(), 'localhost:5000/nginx', {id});
+    var info = await pullUpContainer(new Docker(), 'localhost:5000/nginx', {id});
     expect(info).not.toBeNull();
   });
 
@@ -35,7 +39,7 @@ describe('docker integration tests', function () {
     let before = await dockerComposeCmd('ps');
     expect(before).toMatch(/0\.0\.0\.0:18000->80\/tcp/);
     
-    var info = await pullup.pullUp(new Docker(), 'localhost:5000/nginx', {id});
+    var info = await pullUpContainer(new Docker(), 'localhost:5000/nginx', {id});
     expect(info).not.toBeNull();
 
     // check port (and names!)
