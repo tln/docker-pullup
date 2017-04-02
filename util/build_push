@@ -1,10 +1,11 @@
 #!/bin/bash
+reg=${1-localhost:5000}
 cd test
-echo ----- about to build
+echo ----- about to build and push to $reg
 sleep 3
-(cat Dockerfile; echo 'RUN echo' `date`) > Dockerfile.gen
-docker build -t localhost:5000/nginx:latest -f Dockerfile.gen .
-docker push localhost:5000/nginx:latest
+(cat Dockerfile; echo 'RUN echo' `date` '>> /usr/share/nginx/html/index.html') > Dockerfile.gen
+docker build -t $reg/nginx:latest -f Dockerfile.gen .
+docker push $reg/nginx:latest
 echo ----- pushed
 docker ps
 sleep 15
