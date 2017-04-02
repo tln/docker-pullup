@@ -1,14 +1,17 @@
 #!/bin/bash
 util/dockerstopall
 cd test/registry
-LOCAL_IP=`ipconfig getifaddr en0` docker-compose up -d
+docker-compose -f docker-compose-with-pullup.yml up -d 
+
+docker-compose -f docker-compose-with-pullup.yml logs --follow &
+logjob=$!
+function cleanup {
+    kill $logjob
+}
+trap cleanup EXIT
+
 cd ../..
 
-# Test && start the node service if needed
-echo GET / | nc localhost:1995 || {
-    PORT=1995 node --harmony index.js &
-    sleep 3
-}
 
 cd test
 echo ----- deploying stack
