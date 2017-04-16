@@ -24,6 +24,6 @@ function extractEventInfo(event) {
     // Cobble together the tag for the image from various 
     // parts of the event. We assume the request host is
     // part of the tag.
-    var tag = `${event.request.host}/${event.target.repository}:${event.target.tag}`;
+    var tag = `${event.request.host}/${event.target.repository}:${event.target.tag||'latest'}`;
     return {tag, originalEvent: event, digest: event.target.digest};
 }
