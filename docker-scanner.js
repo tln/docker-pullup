@@ -1,4 +1,4 @@
-module.exports = function ({state, docker, emitter}) {
+module.exports = function ({state, docker, emitter, app}) {
     state.scannedTags = [];
     state.containers = {};   // tag -> container info
     state.servicesByTag = {};  // tag -> service info
@@ -8,6 +8,12 @@ module.exports = function ({state, docker, emitter}) {
         scanServices();
         watchForEvents();
     }
+
+    app.post('/scan', (req, res) => {
+        scanContainers();
+        scanServices();
+    });
+
     function scanContainers() {
         _scan('listContainers', (item) => addContainerFromId(item.Id));
     }
@@ -47,6 +53,7 @@ module.exports = function ({state, docker, emitter}) {
 
     function addService(service) {
         var { services, scannedTags } = state;
+        console.log('addService->', service);
         if (service.Spec.Labels['docker-pullup']) {
             const completeTag = service.Spec.TaskTemplate.ContainerSpec.Image;
             const [ repoTag, repoSha ] = completeTag.split('@');
