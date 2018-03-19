@@ -1,4 +1,3 @@
-var pullUp = require('./pullup');
 module.exports = function ({emitter, app}) {
     app.post('/hook', processHook);
 
