@@ -1,4 +1,4 @@
-FROM node:7.3-alpine
+FROM node:8.10-alpine
 EXPOSE 1995
 WORKDIR /usr/src/app
 COPY package.json /usr/src/app/
