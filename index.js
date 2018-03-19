@@ -9,6 +9,7 @@ const params = {
     emitter: new EventEmitter(),
 };
 params.app = require('./app')(params);
+require('./emitter-listen-all')(params);
 require('./info-api')(params);
 require('./static-tags')(params);
 require('./docker-scanner')(params);

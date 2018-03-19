@@ -53,7 +53,6 @@ module.exports = function ({state, docker, emitter, app}) {
 
     function addService(service) {
         var { services, scannedTags } = state;
-        console.log('addService->', service);
         if (service.Spec.Labels['docker-pullup']) {
             const completeTag = service.Spec.TaskTemplate.ContainerSpec.Image;
             const [ repoTag, repoSha ] = completeTag.split('@');

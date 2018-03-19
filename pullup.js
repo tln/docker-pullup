@@ -6,6 +6,7 @@ module.exports = function ({emitter, state, docker}) {
     function pullupContainerOrService(event) {
         var {tag} = event;
         var service = state.servicesByTag[tag];
+        console.log('pullupContainerOrService:', tag, service);
         if (service) {
             try{
                 pullUpService(event, service);
@@ -19,6 +20,7 @@ module.exports = function ({emitter, state, docker}) {
 
     function pullUpService(event, service) {
         // make a sha-qualified tag
+        console.log('pullUpService!');
         const pinnedTag = event.tag + '@' + event.digest;
         // call update on the service
         const updatedService = Object.assign(service.Spec);
@@ -35,6 +37,7 @@ module.exports = function ({emitter, state, docker}) {
     }
 
     function pullUpContainers(tag) {
+        console.log('pullUpService!');
         var info = state.containers[tag];
         if (!info) return console.log('Container not running:', tag);
         state.tags
