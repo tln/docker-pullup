@@ -15,6 +15,9 @@ require('./docker-scanner')(params);
 require('./hook')(params);
 require('./pullup')(params);
 require('./idler')(params);
+require('./pubsub')(params);
+require('./gcr_auth')(params);
+
 
 params.emitter.emit('start');
 

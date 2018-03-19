@@ -1,8 +1,16 @@
 #!/bin/sh
 cd /usr/src/app
 
+# Just run node app directly if pubsub set
+if [ "$PULLUP_PUBSUB" ]; then
+    export PULLUP_PORT=1995
+    exec node index.js
+fi
+
 # Run the node app if we need to register with the master instance
-[ "$PULLUP_MASTER" ] && PULLUP_IDLE_EXIT=1 node index.js
+if [ "$PULLUP_MASTER" ]; then 
+    PULLUP_IDLE_EXIT=1 node index.js
+fi
 
 # Wait in a low-memory loop until there is necessary activity
 nc -lk -s 0.0.0.0 -p 1995 -e ./incoming.sh

@@ -10,9 +10,10 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@google-cloud/pubsub": "^0.16.5",
     "body-parser": "^1.15.2",
     "docker-events": "0.0.2",
-    "dockerode": "^2.3.1",
+    "dockerode": "^2.5.4",
     "express": "^4.14.0",
     "request": "^2.79.0"
   },

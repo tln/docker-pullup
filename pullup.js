@@ -42,7 +42,7 @@ module.exports = function ({emitter, state, docker}) {
         .filter((tagSpec) => tagsMatch(tag, tagSpec))
         .forEach((tagSpec) => {
                 state.busy++;
-                pullUpContainer(docker, tag, info).then(() => state.busy--);
+                pullUpContainer(docker, tag, info, state.dockerCreds).then(() => state.busy--);
             });
     }
 
