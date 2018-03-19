@@ -1,10 +1,11 @@
-function pullUpContainer(docker, repoTag, containerInfo) {
+function pullUpContainer(docker, repoTag, containerInfo, authconfig) {
     return new Promise((resolve, reject) => {
         if (!containerInfo.id) return error('Error getting tag');
         var oldC = docker.getContainer(containerInfo.id);
         var newC;
-        docker.pull(repoTag, (err, stream) => {
-            docker.modem.followProgress(stream, createContainer);
+        docker.pull(repoTag, {authconfig}, (err, stream) => {
+            if (err) console.error("Error pulling", repoTag, err);
+            else docker.modem.followProgress(stream, createContainer);
         });
 
         function createContainer() {
