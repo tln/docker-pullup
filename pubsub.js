@@ -29,13 +29,18 @@ async function subscribe({subName, topic, autoSubscribe}) {
     return subscription;
 }
 
+/**
+ * Process incoming cloudbuild messages.
+ * When we get a SUCCESS message, emit a "push" 
+ * for each image built.
+ */
 function handleCloudBuildMessage(emitter, message) {
     message.ack();
-    let data = JSON.parse(message.data);
-    console.log('cb:', JSON.stringify(JSON.parse(message.data), null, 4));
     let {status} = message.attributes;
     if (status !== 'SUCCESS') return;
-    let {name: tag, digest} = data.results.images[0];
-    console.log('cb->', tag, digest);
-    if (tag && digest) emitter.emit('push', {tag, digest});
+    let data = JSON.parse(message.data);
+    for (let {name: tag, digest} of data.results.images) {
+        console.log('Cloud build image built:', tag, digest);
+        if (tag && digest) emitter.emit('push', {tag, digest});
+    }
 }
