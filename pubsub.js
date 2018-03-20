@@ -5,7 +5,7 @@ let private = {};
 module.exports = async function ({emitter, state}) {
     if (process.env.PULLUP_PUBSUB) {
         let config = getConfig();
-        state.pubsub = {config, last: []};
+        state.pubsub = {config};
         private.subscription = await subscribe(config);
         private.subscription.on('message', handleCloudBuildMessage.bind(state.pubsub, emitter));
         console.log(`cb: waiting on cloud build messges on ${config.subName}`);
@@ -31,15 +31,11 @@ async function subscribe({subName, topic, autoSubscribe}) {
 
 function handleCloudBuildMessage(emitter, message) {
     message.ack();
-    
+    let data = JSON.parse(message.data);
+    console.log('cb:', JSON.stringify(JSON.parse(message.data), null, 4));
     let {status} = message.attributes;
-    let {images:[image]} = JSON.parse(message.data);
-
-    // Save recent messages for debugging
-    this.last.push({status, image, ts: (new Date)+''});
-    if (this.last.length > 5) this.last.shift();
-
     if (status !== 'SUCCESS') return;
-    console.log('cb->', image);
-    if (image) emitter.emit('push', {tag:image});
+    let {name: tag, digest} = data.results.images[0];
+    console.log('cb->', tag, digest);
+    if (tag && digest) emitter.emit('push', {tag, digest});
 }
