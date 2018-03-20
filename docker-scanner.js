@@ -2,6 +2,7 @@ module.exports = function ({state, docker, emitter, app}) {
     state.scannedTags = [];
     state.containers = {};   // tag -> container info
     state.servicesByTag = {};  // tag -> service info
+    state.lookForSwarmServices = true; // until proven to fail
 
     if (process.env.PULLUP_SCAN !== 'no') {
         scanContainers();
@@ -15,18 +16,29 @@ module.exports = function ({state, docker, emitter, app}) {
     });
 
     function scanContainers() {
-        _scan('listContainers', (item) => addContainerFromId(item.Id));
+        docker.listContainers((err, items) => {
+            if (err) return console.log('listContainers error:', err);
+            for (let {Id} of items) addContainerFromId(Id);
+        });
     }
     function scanServices() {
-        _scan('listServices', addService);
-    }
-    function _scan(what, cb) {
-        docker[what]((err, items) => {
-            if (err) return console.log('what', err);
-            for (var item of items) {
-                cb(item);
+        if (!state.lookForSwarmServices) return;
+        docker.listServices((err, items) => {
+            if (err) {
+                if (notSwarm(err)) {
+                    console.log('Not a swarm instance. Scanning for services disabled.');
+                    state.lookForSwarmServices = false;
+                } else {
+                    console.log('listServices error:', err);
+                }
+            } else {
+                items.map(addService);
             }
         });
+    }
+    function notSwarm(err) {
+        let {message=''} = err.json || {};
+        return/^This node is not a swarm manager/.test(message);
     }
     function watchForEvents() {
         const DockerEvents = require('docker-events');
