@@ -8,7 +8,7 @@ module.exports = async function ({emitter, state}) {
         state.pubsub = {config};
         private.subscription = await subscribe(config);
         private.subscription.on('message', handleCloudBuildMessage.bind(state.pubsub, emitter));
-        console.log(`pubsub: waiting on cloud build messges on ${config.subName}`);
+        console.log(`pubsub: waiting on cloud build messages on ${config.subName}`);
     }
 }
 
