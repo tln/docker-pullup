@@ -8,7 +8,7 @@ module.exports = async function ({emitter, state}) {
         state.pubsub = {config};
         private.subscription = await subscribe(config);
         private.subscription.on('message', handleCloudBuildMessage.bind(state.pubsub, emitter));
-        console.log(`cb: waiting on cloud build messges on ${config.subName}`);
+        console.log(`pubsub: waiting on cloud build messges on ${config.subName}`);
     }
 }
 
@@ -37,10 +37,14 @@ async function subscribe({subName, topic, autoSubscribe}) {
 function handleCloudBuildMessage(emitter, message) {
     message.ack();
     let {status} = message.attributes;
-    if (status !== 'SUCCESS') return;
-    let data = JSON.parse(message.data);
-    for (let {name: tag, digest} of data.results.images) {
-        console.log('Cloud build image built:', tag, digest);
-        if (tag && digest) emitter.emit('push', {tag, digest});
+    if (status === 'SUCCESS') {
+        let data = JSON.parse(message.data);
+        for (let {name: tag, digest} of data.results.images) {
+            console.log('Cloud build image built:', tag, digest);
+            if (tag && digest) emitter.emit('push', {tag, digest});
+        }
+    } else {
+        let {images: [image]} = data;
+        emitter.emit('build_'+status.toLowerCase(), image);
     }
 }
