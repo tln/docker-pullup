@@ -18,22 +18,33 @@ module.exports = function ({emitter, state, docker}) {
         }
     }
 
-    function pullUpService(event, service) {
+    function pullUpService(event, {ID}) {
         // make a sha-qualified tag
         console.log('pullUpService!');
         const pinnedTag = event.tag + '@' + event.digest;
-        // call update on the service
-        const updatedService = Object.assign(service.Spec);
-        updatedService.TaskTemplate.ContainerSpec.Image = pinnedTag;
-        updatedService.version = parseInt(service.Version.Index);
-        emitter.emit('updating', {what: 'service', service: service.ID, pinnedTag});
-        docker.getService(service.ID).update(updatedService, (err) => {
-            if (!err) {
-                emitter.emit('update', {what: 'service', service: service.ID, pinnedTag});
-            } else {
-                emitter.emit('updateErr', {what: 'service', service: service.ID, pinnedTag, err});
+        // call update on the service. We must get updated information because the 
+        // version needs to bbe up-to-date. Otherwise we get "rpc error: code = Unknown desc = update out of sequence"
+        let service = docker.getService(ID);
+        service.inspect((err, info) => {
+            if (err) {
+                // TODO update error?
+                console.log('Error inspecting service', err);
+                return;
             }
-        });
+            const updatedService = Object.assign(info.Spec);
+            updatedService.TaskTemplate.ContainerSpec.Image = pinnedTag;
+            updatedService.version = parseInt(info.Version.Index);
+            let eventInfo = {what: 'service', service: ID, pinnedTag};
+            emitter.emit('updating', eventInfo);
+            service.update(updatedService, (err) => {
+                if (!err) {
+                    emitter.emit('update', eventInfo);
+                } else {
+                    emitter.emit('updateErr', {err, ...eventInfo});
+                }
+            });
+        })
+        docker.getService(service.ID)
     }
 
     function pullUpContainers(tag) {
