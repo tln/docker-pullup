@@ -37,8 +37,8 @@ async function subscribe({subName, topic, autoSubscribe}) {
 function handleCloudBuildMessage(emitter, message) {
     message.ack();
     let {status} = message.attributes;
+    let data = JSON.parse(message.data);
     if (status === 'SUCCESS') {
-        let data = JSON.parse(message.data);
         for (let {name: tag, digest} of data.results.images) {
             console.log('Cloud build image built:', tag, digest);
             if (tag && digest) emitter.emit('push', {tag, digest});
