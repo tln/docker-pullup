@@ -4,7 +4,7 @@ const fs = require('fs');
 module.exports = async function ({emitter, docker, state}) {
     if (!process.env.PULLUP_GCR_CREDS) return;
     let creds = readGoogleAppCreds();
-    state.dockerCreds = creds;
+    state.creds.docker = creds;
     docker.checkAuth(creds, (err, res) => {
         if (err) console.error('Error using gcr creds on docker', err, creds);
         console.log('Using GCR creds result->', res);

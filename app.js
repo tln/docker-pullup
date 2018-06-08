@@ -2,6 +2,11 @@ var express = require('express');
 module.exports = function ({state, emitter}) {
     state.port = +(process.env.PULLUP_PORT||1996);
     state.info = '';
+
+    // Hidden place for creds (non-enumerable)
+    Object.defineProperty(state, 'creds', {value: {}});
+    console.assert(!JSON.stringify(state).includes('creds'))
+
     var app = express();
     app.set('json spaces', 4);
     app.use(parseJson);
