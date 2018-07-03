@@ -25,6 +25,9 @@ module.exports = function ({emitter, state, docker}) {
         // make a sha-qualified tag
         console.log('pullUpService!', event);
         const pinnedTag = event.tag + '@' + event.digest;
+
+        await pullImage(pinnedTag, {authconfig});
+
         // call update on the service. We must get updated information because the 
         // version needs to bbe up-to-date. Otherwise we get "rpc error: code = Unknown desc = update out of sequence"
         let service = docker.getService(ID);
@@ -98,4 +101,13 @@ module.exports = function ({emitter, state, docker}) {
     function tagsMatch(tag, tagSpec) {
         return tag === tagSpec || tagSpec === '*';
     }
+}
+
+function pullImage(tag, opts) {
+    return new Promise((resolve, reject) => {
+        docker.pull(tag, opts, (err, stream) => {
+            if (err) reject(err);
+            else docker.modem.followProgress(stream, resolve);
+        });
+    });
 }
