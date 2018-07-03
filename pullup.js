@@ -83,6 +83,15 @@ module.exports = function ({emitter, state, docker}) {
         docker.getService(service.ID)
     }
 
+    function pullImage(tag, authconfig) {
+        return new Promise((resolve, reject) => {
+            docker.pull(tag, {authconfig}, (err, stream) => {
+                if (err) reject(err);
+                else docker.modem.followProgress(stream, resolve);
+            });
+        });
+    }
+    
     function pullUpContainers(tag) {
         console.log('pullUpService!');
         var info = state.containers[tag];
@@ -103,11 +112,4 @@ module.exports = function ({emitter, state, docker}) {
     }
 }
 
-function pullImage(tag, authconfig) {
-    return new Promise((resolve, reject) => {
-        docker.pull(tag, {authconfig}, (err, stream) => {
-            if (err) reject(err);
-            else docker.modem.followProgress(stream, resolve);
-        });
-    });
-}
+
