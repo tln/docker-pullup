@@ -26,7 +26,7 @@ module.exports = function ({emitter, state, docker}) {
         console.log('pullUpService!', event);
         const pinnedTag = event.tag + '@' + event.digest;
 
-        await pullImage(pinnedTag, {authconfig});
+        await pullImage(pinnedTag, state.creds.docker);
 
         // call update on the service. We must get updated information because the 
         // version needs to bbe up-to-date. Otherwise we get "rpc error: code = Unknown desc = update out of sequence"
@@ -103,9 +103,9 @@ module.exports = function ({emitter, state, docker}) {
     }
 }
 
-function pullImage(tag, opts) {
+function pullImage(tag, authconfig) {
     return new Promise((resolve, reject) => {
-        docker.pull(tag, opts, (err, stream) => {
+        docker.pull(tag, {authconfig}, (err, stream) => {
             if (err) reject(err);
             else docker.modem.followProgress(stream, resolve);
         });
