@@ -1,7 +1,7 @@
 FROM node:12.2-slim
 
 # install docker
-RUN apt-get update && apt-get install -y docker
+RUN apt-get update && apt-get install -y docker busybox
 
 EXPOSE 1995
 WORKDIR /usr/src/app
