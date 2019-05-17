@@ -1,5 +1,5 @@
-const PubSub = require('@google-cloud/pubsub')
-const pubsub = PubSub();
+const {PubSub} = require('@google-cloud/pubsub')
+const pubsub = new PubSub();
 
 let private = {};
 module.exports = async function ({emitter, state}) {
