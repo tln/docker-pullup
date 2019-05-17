@@ -76,8 +76,6 @@ describe('docker integration tests', function () {
     let id = await bringUpService();
     //console.log('service up!');
 
-    debugger;
-
     let image = await generateNewImage();
     //console.log('image generated!');
 

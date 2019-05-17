@@ -53,7 +53,6 @@ module.exports = function ({state, docker, emitter, app}) {
         // NB. as of docker 1.27, 'services' are not reported as separate events
         if (Type !== 'container') return;
         if (Action === 'start') {
-            debugger;
             addContainerFromId(id);
             addServiceFromContainerLabels(Actor.Attributes);
         } else if (Action === 'stop') {
