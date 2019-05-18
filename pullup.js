@@ -38,10 +38,20 @@ module.exports = function ({emitter, state, docker}) {
 
             docker.pull(pinnedTag, {authconfig: state.creds.docker}, (err, stream) => {
                 if (err) console.error("Error pulling", pinnedTag, err);
-                else docker.modem.followProgress(stream, updateService);
+                else {
+                    docker.modem.followProgress(stream, err => {
+                        if (err) {
+                            eventInfo.err = err;
+                            console.log('Error pulling', eventInfo)
+                            emitter.emit('updateErr', eventInfo);
+                        } else {
+                            updateService();
+                        }
+                    });
+                }
             });
 
-            async function updateService() {
+            async function updateService(err) {
                 // exec docker service update XXX_XXX
                 let eventInfo = {what: 'service', service: ID, pinnedTag};
                 emitter.emit('updating', eventInfo);
@@ -49,7 +59,8 @@ module.exports = function ({emitter, state, docker}) {
                     await pshell(`docker service update --with-registry-auth --image ${pinnedTag} ${info.Spec.Name}`);
                     emitter.emit('update', eventInfo);
                 } catch (err) {
-                    emitter.emit('updateErr', {err, ...eventInfo});
+                    eventInfo.err = err;
+                    emitter.emit('updateErr', eventInfo);
                 }
             }
 
