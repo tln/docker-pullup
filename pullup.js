@@ -39,9 +39,12 @@ module.exports = function ({emitter, state, docker}) {
             // exec docker service update XXX_XXX
             let eventInfo = {what: 'service', service: ID, pinnedTag};
             emitter.emit('updating', eventInfo);
-            await pshell(`docker service update --with-registry-auth --image ${pinnedTag} ${info.Spec.Name}`);
-            emitter.emit('update', eventInfo);
-            // TODO what about error?
+            try {
+                await pshell(`docker service update --with-registry-auth --image ${pinnedTag} ${info.Spec.Name}`);
+                emitter.emit('update', eventInfo);
+            } catch (err) {
+                emitter.emit('updateErr', {err, ...eventInfo});
+            }
 
             // const updatedService = Object.assign(info.Spec);
             // updatedService.TaskTemplate.ContainerSpec.Image = pinnedTag;
