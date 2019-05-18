@@ -1,3 +1,6 @@
+const pshell = require('pshell');
+pshell.options.echoCommand = true;
+
 module.exports = function ({emitter, state, docker}) {
     var pullUpContainer = require('./pullup-container');
 
@@ -18,31 +21,40 @@ module.exports = function ({emitter, state, docker}) {
         }
     }
 
-    function pullUpService(event, {ID}) {
+    async function pullUpService(event, {ID}) {
         // make a sha-qualified tag
-        console.log('pullUpService!');
+        console.log('pullUpService!', event);
         const pinnedTag = event.tag + '@' + event.digest;
         // call update on the service. We must get updated information because the 
         // version needs to bbe up-to-date. Otherwise we get "rpc error: code = Unknown desc = update out of sequence"
         let service = docker.getService(ID);
-        service.inspect((err, info) => {
+        service.inspect(async (err, info) => {
             if (err) {
                 // TODO update error?
                 console.log('Error inspecting service', err);
                 return;
             }
-            const updatedService = Object.assign(info.Spec);
-            updatedService.TaskTemplate.ContainerSpec.Image = pinnedTag;
-            updatedService.version = parseInt(info.Version.Index);
+            console.log('pullUpService inspect!', info.Spec.Name);
+
+            // exec docker service update XXX_XXX
             let eventInfo = {what: 'service', service: ID, pinnedTag};
             emitter.emit('updating', eventInfo);
-            service.update(updatedService, (err) => {
-                if (!err) {
-                    emitter.emit('update', eventInfo);
-                } else {
-                    emitter.emit('updateErr', {err, ...eventInfo});
-                }
-            });
+            await pshell(`docker service update --with-registry-auth --image ${pinnedTag} ${info.Spec.Name}`);
+            emitter.emit('update', eventInfo);
+            // TODO what about error?
+
+            // const updatedService = Object.assign(info.Spec);
+            // updatedService.TaskTemplate.ContainerSpec.Image = pinnedTag;
+            // updatedService.version = parseInt(info.Version.Index);
+            // let eventInfo = {what: 'service', service: ID, pinnedTag};
+            // emitter.emit('updating', eventInfo);
+            // service.update(updatedService, (err) => {
+            //     if (!err) {
+            //         emitter.emit('update', eventInfo);
+            //     } else {
+            //         emitter.emit('updateErr', {err, ...eventInfo});
+            //     }
+            // });
         })
         docker.getService(service.ID)
     }
