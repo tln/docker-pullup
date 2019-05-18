@@ -13,4 +13,4 @@ if [ "$PULLUP_MASTER" ]; then
 fi
 
 # Wait in a low-memory loop until there is necessary activity
-busybox nc -ll -p 1995 0.0.0.0 -e ./incoming.sh
+nc -lk -s 0.0.0.0 -p 1995 -e ./incoming.sh

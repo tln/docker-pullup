@@ -1,7 +1,7 @@
-FROM node:12.2-slim
+FROM node:12.2-alpine
 
 # install docker
-RUN apt-get update && apt-get install -y docker busybox
+RUN apk add --update docker
 
 EXPOSE 1995
 WORKDIR /usr/src/app
