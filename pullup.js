@@ -36,14 +36,21 @@ module.exports = function ({emitter, state, docker}) {
             }
             console.log('pullUpService inspect!', info.Spec.Name);
 
-            // exec docker service update XXX_XXX
-            let eventInfo = {what: 'service', service: ID, pinnedTag};
-            emitter.emit('updating', eventInfo);
-            try {
-                await pshell(`docker service update --with-registry-auth --image ${pinnedTag} ${info.Spec.Name}`);
-                emitter.emit('update', eventInfo);
-            } catch (err) {
-                emitter.emit('updateErr', {err, ...eventInfo});
+            docker.pull(pinnedTag, {authconfig: state.creds.docker}, (err, stream) => {
+                if (err) console.error("Error pulling", pinnedTag, err);
+                else docker.modem.followProgress(stream, updateService);
+            });
+
+            async function updateService() {
+                // exec docker service update XXX_XXX
+                let eventInfo = {what: 'service', service: ID, pinnedTag};
+                emitter.emit('updating', eventInfo);
+                try {
+                    await pshell(`docker service update --with-registry-auth --image ${pinnedTag} ${info.Spec.Name}`);
+                    emitter.emit('update', eventInfo);
+                } catch (err) {
+                    emitter.emit('updateErr', {err, ...eventInfo});
+                }
             }
 
             // const updatedService = Object.assign(info.Spec);
