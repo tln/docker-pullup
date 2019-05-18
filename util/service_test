@@ -5,8 +5,8 @@ LOCAL_IP=`ipconfig getifaddr en0` docker-compose up -d
 cd ../..
 
 # Test && start the node service if needed
-echo GET / | nc localhost:1995 || {
-    PORT=1995 node --harmony index.js &
+echo GET / | nc localhost 1995 || {
+    PULLUP_PORT=1995 node index.js &
     sleep 3
 }
 

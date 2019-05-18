@@ -3,7 +3,7 @@ notifications:
   endpoints:
     - name: pullup
       disabled: false
-      url: http://pullup:1995/hook
+      url: http://192.168.1.67:1995/hook
       timeout: 3s
       threshold: 2
       backoff: 10s
