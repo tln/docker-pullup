@@ -72,7 +72,7 @@ module.exports = function ({emitter, state, docker}) {
         return new Promise((resolve, reject) => {
             docker.pull(tag, {authconfig}, (err, stream) => {
                 if (err) reject(err);
-                else docker.modem.followProgress(stream, resolve);
+                else docker.modem.followProgress(stream, err => err ? reject(err) : resolve());
             });
         });
     }
