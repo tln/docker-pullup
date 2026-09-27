@@ -12,46 +12,26 @@ module.exports = function ({emitter, state, docker}) {
         console.log('pullupContainerOrService:', tag, services.map(s => s.Spec.Name));
         if (services.length) {
             for (let service of services) {
-                pullUpService(event, service).catch(e => console.error(e));
+                pullUpService(event, service);
             }
         } else {
             pullUpContainers(tag);
         }
     }
 
-    async function pullUpService(event, {ID}) {
-        // make a sha-qualified tag
-        console.log('pullUpService!', event);
+    async function pullUpService(event, {ID, Spec: {Name}}) {
+        console.log('pullUpService!', Name, event);
         const pinnedTag = event.tag + '@' + event.digest;
-
-        await pullImage(pinnedTag, state.creds.docker);
-
-        // call update on the service. We must get updated information because the 
-        // version needs to bbe up-to-date. Otherwise we get "rpc error: code = Unknown desc = update out of sequence"
-        let service = docker.getService(ID);
-        service.inspect(async (err, info) => {
-            if (err) {
-                // TODO update error?
-                console.log('Error inspecting service', err);
-                return;
-            }
-            console.log('pullUpService inspect!', info.Spec.Name);
-
-            updateService();
-
-            async function updateService(err) {
-                // exec docker service update XXX_XXX
-                let eventInfo = {what: 'service', service: ID, pinnedTag};
-                emitter.emit('updating', eventInfo);
-                try {
-                    await pshell(`docker service update --with-registry-auth --image ${pinnedTag} ${info.Spec.Name}`);
-                    emitter.emit('update', eventInfo);
-                } catch (err) {
-                    eventInfo.err = err;
-                    emitter.emit('updateErr', eventInfo);
-                }
-            }
-        })
+        let eventInfo = {what: 'service', service: ID, pinnedTag};
+        try {
+            await pullImage(pinnedTag, state.creds.docker);
+            emitter.emit('updating', eventInfo);
+            await pshell(`docker service update --with-registry-auth --image ${pinnedTag} ${Name}`);
+            emitter.emit('update', eventInfo);
+        } catch (err) {
+            eventInfo.err = err;
+            emitter.emit('updateErr', eventInfo);
+        }
     }
 
     function pullImage(tag, authconfig) {
