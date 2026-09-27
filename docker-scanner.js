@@ -1,7 +1,7 @@
 module.exports = function ({state, docker, emitter, app}) {
     state.scannedTags = [];
     state.containers = {};   // tag -> container info
-    state.servicesByTag = {};  // tag -> service info
+    state.servicesByTag = {};  // tag -> {service ID -> service info}
     state.lookForSwarmServices = true; // until proven to fail
 
     if (process.env.PULLUP_SCAN !== 'no') {
@@ -72,7 +72,10 @@ module.exports = function ({state, docker, emitter, app}) {
                 console.log('No sha info!');
             }
             service.repoSha = repoSha;
-            state.servicesByTag[repoTag] = service;
+            // Several services can run the same tag (e.g. rails + sidekiq),
+            // so keep all of them. Drop this service from any tag it used before.
+            for (let byId of Object.values(state.servicesByTag)) delete byId[service.ID];
+            (state.servicesByTag[repoTag] = state.servicesByTag[repoTag] || {})[service.ID] = service;
             emitter.emit('serviceFound', service);
         }
     }

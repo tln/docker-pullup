@@ -8,13 +8,11 @@ module.exports = function ({emitter, state, docker}) {
 
     function pullupContainerOrService(event) {
         var {tag} = event;
-        var service = state.servicesByTag[tag];
-        console.log('pullupContainerOrService:', tag, service);
-        if (service) {
-            try{
-                pullUpService(event, service);
-            }catch(e){
-                console.error(e);
+        var services = Object.values(state.servicesByTag[tag] || {});
+        console.log('pullupContainerOrService:', tag, services.map(s => s.Spec.Name));
+        if (services.length) {
+            for (let service of services) {
+                pullUpService(event, service).catch(e => console.error(e));
             }
         } else {
             pullUpContainers(tag);
