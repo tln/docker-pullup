@@ -41,24 +41,24 @@ module.exports = function ({state, docker, emitter, app}) {
         return/^This node is not a swarm manager/.test(message);
     }
     function watchForEvents() {
-        const DockerEvents = require('docker-events');
-        var events = new DockerEvents({ docker });
-        events.start();
-        events.on('start', (event) => dockerEvent(event));
-        events.on('stop', (event) => dockerEvent(event));
-        emitter.on('stop', () => events.stop());
+        let running = true, stream;
+        const filters = {type: ['container'], event: ['start', 'stop']};
+        (function connect() {
+            docker.getEvents({filters}, (err, res) => {
+                if (err) return console.log('getEvents error:', err);
+                stream = res;
+                docker.modem.followProgress(res, () => { if (running) connect(); }, dockerEvent);
+            });
+        })();
+        emitter.on('stop', () => { running = false; if (stream) stream.destroy(); });
     }
-    function dockerEvent(event, state) {
-        var { Action, Type, from, id, Actor } = event;
+    function dockerEvent({ Action, Actor }) {
         // NB. as of docker 1.27, 'services' are not reported as separate events
-        if (Type !== 'container') return;
         if (Action === 'start') {
-            addContainerFromId(id);
+            addContainerFromId(Actor.ID);
             addServiceFromContainerLabels(Actor.Attributes);
         } else if (Action === 'stop') {
-            removeContainer(from);
-        } else {
-            console.log('Unhandled container event', Type);
+            removeContainer(Actor.Attributes.image);
         }
     }
 
