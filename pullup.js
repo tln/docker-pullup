@@ -51,21 +51,7 @@ module.exports = function ({emitter, state, docker}) {
                     emitter.emit('updateErr', eventInfo);
                 }
             }
-
-            // const updatedService = Object.assign(info.Spec);
-            // updatedService.TaskTemplate.ContainerSpec.Image = pinnedTag;
-            // updatedService.version = parseInt(info.Version.Index);
-            // let eventInfo = {what: 'service', service: ID, pinnedTag};
-            // emitter.emit('updating', eventInfo);
-            // service.update(updatedService, (err) => {
-            //     if (!err) {
-            //         emitter.emit('update', eventInfo);
-            //     } else {
-            //         emitter.emit('updateErr', {err, ...eventInfo});
-            //     }
-            // });
         })
-        docker.getService(service.ID)
     }
 
     function pullImage(tag, authconfig) {
