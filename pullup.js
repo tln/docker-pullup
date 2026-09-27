@@ -5,6 +5,7 @@ module.exports = function ({emitter, state, docker}) {
     var pullUpContainer = require('./pullup-container');
 
     emitter.on('push', pullupContainerOrService);
+    emitter.on('updateErr', ({pinnedTag, err}) => console.error('updateErr:', pinnedTag, err));
 
     function pullupContainerOrService(event) {
         var {tag} = event;
