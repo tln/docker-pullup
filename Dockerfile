@@ -1,7 +1,7 @@
-FROM node:12.2-alpine
+FROM node:24-alpine
 
-# install docker
-RUN apk add --update docker
+# docker CLI for `docker service update`
+RUN apk add --no-cache docker-cli
 
 EXPOSE 1995
 WORKDIR /usr/src/app
