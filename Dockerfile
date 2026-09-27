@@ -5,7 +5,7 @@ RUN apk add --no-cache docker-cli
 
 EXPOSE 1995
 WORKDIR /usr/src/app
-COPY package.json /usr/src/app/
-RUN npm install
+COPY package.json package-lock.json /usr/src/app/
+RUN npm ci --omit=dev
 COPY . /usr/src/app
 CMD [ "/usr/src/app/trigger.sh" ]
