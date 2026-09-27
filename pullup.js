@@ -37,20 +37,7 @@ module.exports = function ({emitter, state, docker}) {
             }
             console.log('pullUpService inspect!', info.Spec.Name);
 
-            docker.pull(pinnedTag, {authconfig: state.creds.docker}, (err, stream) => {
-                if (err) console.error("Error pulling", pinnedTag, err);
-                else {
-                    docker.modem.followProgress(stream, err => {
-                        if (err) {
-                            eventInfo.err = err;
-                            console.log('Error pulling', eventInfo)
-                            emitter.emit('updateErr', eventInfo);
-                        } else {
-                            updateService();
-                        }
-                    });
-                }
-            });
+            updateService();
 
             async function updateService(err) {
                 // exec docker service update XXX_XXX
