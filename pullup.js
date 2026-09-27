@@ -24,7 +24,7 @@ module.exports = function ({emitter, state, docker}) {
         const pinnedTag = event.tag + '@' + event.digest;
         let eventInfo = {what: 'service', service: ID, pinnedTag};
         try {
-            await pullImage(pinnedTag, state.creds.docker);
+            await pullImage(pinnedTag, state.dockerCreds);
             emitter.emit('updating', eventInfo);
             await pshell(`docker service update --with-registry-auth --image ${pinnedTag} ${Name}`);
             emitter.emit('update', eventInfo);
