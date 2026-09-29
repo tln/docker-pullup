@@ -25,21 +25,31 @@ https://github.com/CenturyLinkLabs/watchtower
 
 https://github.com/ehazlett/conduit
 
+## Images
+
+Multi-arch (amd64, arm64) images are published to
+`ghcr.io/tln/docker-pullup`:
+
+- `:X.Y.Z`, `:X.Y`, `:latest` for each release tag `vX.Y.Z`
+- `:edge` for the tip of `master`
+
+`GET /` reports the running version and git revision. Versions before 0.2.0
+were published by hand as `tlntln/docker-pullup` on Docker Hub.
+
 ## Usage
 
-docker-compose.yml
+compose.yml
 ```
-version: '2'
-services: 
+services:
     pullup:
-        image: tlntln/pullup
+        image: ghcr.io/tln/docker-pullup:0.2
         ports:
         - 1995:1995
         environment:
             # Scan for PULLUP vars?
-            PULLUP_SCAN=yes
+            PULLUP_SCAN: 'yes'
             # Repos (image names) to hardcode
-            PULLUP_TAGS=redis docker.mycorp.com/myapp:v1
+            PULLUP_TAGS: redis registry.example.com/myapp:v1
         volumes:
         - /var/run/docker.sock:/var/run/docker.sock
 ```
