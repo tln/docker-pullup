@@ -40,16 +40,45 @@ module.exports = function ({state, docker, emitter, app}) {
         let {message=''} = err.json || {};
         return/^This node is not a swarm manager/.test(message);
     }
+    // The events stream never ends on its own, so parse it line by line
+    // (followProgress would buffer every event). Reconnect after a delay if
+    // it drops (e.g. daemon restart), and rescan to catch missed events.
     function watchForEvents() {
-        let running = true, stream;
+        const RECONNECT_MS = 5000;
+        let running = true, connected = false, stream;
         const filters = {type: ['container'], event: ['start', 'stop']};
-        (function connect() {
+        function connect() {
+            if (!running) return;
             docker.getEvents({filters}, (err, res) => {
-                if (err) return console.log('getEvents error:', err);
+                if (err) {
+                    console.log('getEvents error:', err);
+                    return reconnect();
+                }
+                if (connected) { scanContainers(); scanServices(); }
+                connected = true;
                 stream = res;
-                docker.modem.followProgress(res, () => { if (running) connect(); }, dockerEvent);
+                let partial = '';
+                res.setEncoding('utf8');
+                res.on('data', chunk => {
+                    const lines = (partial + chunk).split('\n');
+                    partial = lines.pop();
+                    for (const line of lines) if (line.trim()) handleEventLine(line);
+                });
+                res.on('error', err => console.log('getEvents stream error:', err));
+                res.on('close', reconnect);
             });
-        })();
+        }
+        function reconnect() {
+            if (running) setTimeout(connect, RECONNECT_MS);
+        }
+        function handleEventLine(line) {
+            try {
+                dockerEvent(JSON.parse(line));
+            } catch (err) {
+                console.log('docker event error:', err, line);
+            }
+        }
+        connect();
         emitter.on('stop', () => { running = false; if (stream) stream.destroy(); });
     }
     function dockerEvent({ Action, Actor }) {
