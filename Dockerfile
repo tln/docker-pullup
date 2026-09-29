@@ -1,4 +1,4 @@
-FROM node:24-alpine
+FROM node:26-alpine
 
 # docker CLI for `docker service update`
 RUN apk add --no-cache docker-cli
