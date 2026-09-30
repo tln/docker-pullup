@@ -54,6 +54,14 @@ services:
         - /var/run/docker.sock:/var/run/docker.sock
 ```
 
+## Private GCR images
+
+Set `PULLUP_GCR_CREDS=yes` and `GOOGLE_APPLICATION_CREDENTIALS` to a service
+account key file. Pullup uses that key for its own pulls. It also writes the key
+into a docker CLI config, so `docker service update --with-registry-auth` hands
+the key to swarm nodes. `PULLUP_GCR_HOSTS` (default `gcr.io`) lists the registry
+hosts it covers, separated by spaces or commas.
+
 ## Deploy events (OpenTelemetry)
 
 When `OTEL_EXPORTER_OTLP_ENDPOINT` (or `OTEL_EXPORTER_OTLP_LOGS_ENDPOINT`) is
