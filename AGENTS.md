@@ -23,6 +23,8 @@ Pub/Sub message says a new image was pushed.
 - `hook.js` (registry webhook) and `pubsub.js` (Cloud Build) produce `push`;
   `pullup.js` consumes it: swarm services via `docker service update`, plain
   containers via `pullup-container.js`.
+- `otel.js` sends one OTLP/HTTP log record per finished service update
+  (`update`/`updateErr`) when `OTEL_EXPORTER_OTLP_ENDPOINT` is set.
 - `docker-scanner.js` discovers services labelled `docker-pullup` and
   containers with `PULLUP*` env vars.
 - `trigger.sh` / `incoming.sh`: lazy-start mode (an `nc` listener on 1995
@@ -41,5 +43,6 @@ Pub/Sub message says a new image was pushed.
 
 ## Tests
 
-- `npm test` runs jest. Current specs are docker integration tests (need a
-  local docker, registry on `localhost:5000`, and swarm for `swarm.spec.js`).
+- `npm test` runs jest. `otel.spec.js` is a plain unit test. The other specs
+  are docker integration tests (need a local docker, registry on
+  `localhost:5000`, and swarm for `swarm.spec.js`).

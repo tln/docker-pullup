@@ -54,5 +54,24 @@ services:
         - /var/run/docker.sock:/var/run/docker.sock
 ```
 
+## Deploy events (OpenTelemetry)
+
+When `OTEL_EXPORTER_OTLP_ENDPOINT` (or `OTEL_EXPORTER_OTLP_LOGS_ENDPOINT`) is
+set, each finished swarm service update sends one OTLP/HTTP JSON log record
+with `event.name=deploy` and these attributes:
+
+| attribute | example |
+| --- | --- |
+| `deploy.service` | `myapp_web` (the swarm service updated) |
+| `image.old` / `image.new` | `registry.example.com/myapp:1@sha256:...` |
+| `deploy.result` | `ok`, `rolled_back` or `failed` |
+| `deploy.duration_ms` | `41200` (image pull + service update) |
+| `error.message` | only when not `ok` |
+
+Resource attributes come from `OTEL_RESOURCE_ATTRIBUTES` (e.g.
+`host.name=prod`), with `service.name=pullup` (or `OTEL_SERVICE_NAME`) and
+`service.version` set to the pullup version. `OTEL_EXPORTER_OTLP_HEADERS` is
+honored. Sends time out after 5s and never fail or delay a deploy.
+
 
 

@@ -11,6 +11,7 @@ const params = {
 params.app = require('./app')(params);
 require('./emitter-listen-all')(params);
 require('./slack')(params);
+require('./otel')(params);
 require('./info-api')(params);
 require('./static-tags')(params);
 require('./docker-scanner')(params);
