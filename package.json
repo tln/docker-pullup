@@ -10,7 +10,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@google-cloud/pubsub": "^6.1.0",
+    "@google-cloud/pubsub": "^6.2.0",
     "dockerode": "^5.0.1",
     "express": "^5.2.1",
     "pshell": "^1.1.0"
